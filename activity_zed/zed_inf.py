@@ -26,6 +26,7 @@ class LSTM(nn.Module):
         self.fc = torch.nn.Linear(hidden_dim,output_dim)
         self.bn = nn.BatchNorm1d(seq_len)
         
+        
     def forward(self,inputs):
         x = self.bn(inputs)
         lstm_out,(hn,cn) = self.lstm(x)
@@ -33,7 +34,7 @@ class LSTM(nn.Module):
         return out
     
  
-
+path = os.getenv("path_activity")
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 n_hidden = 128
 n_joints = 25*2
@@ -43,7 +44,7 @@ seq_len = 300
 model = LSTM(n_joints,n_hidden,n_categories,n_layer, seq_len).to(device)
 
 # ckpt='lstm_zed_april15.pth'
-ckpt='lstm_zed_april17.pth'
+ckpt= path + "lstm_zed_april17.pth"
 
 print('Loading ckpt: ', ckpt)
 model.load_state_dict(torch.load(ckpt))

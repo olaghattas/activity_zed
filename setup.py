@@ -21,8 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'zed_sub = activity_zed.zed_sub:main',
-            'zed_inf = activity_zed.zed_inf:main'
-            'zed_inf_cpu = activity_zed.zed_inf_cpu:main'
+            'zed_inf = activity_zed.zed_inf:main',
+            'zed_inf_cpu = activity_zed.zed_inf_cpu:main',
         ],
     },
 )

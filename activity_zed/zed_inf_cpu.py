@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, Int32
 from sensor_msgs.msg import Image
 from zed_interfaces.msg import ObjectsStamped
 import cv2
@@ -59,7 +59,7 @@ class ZedInf(Node):
 
     def __init__(self):
         super().__init__('zed_sub')
-        self.publisher_ = self.create_publisher(String, '/activity', 10)
+        self.publisher_ = self.create_publisher(String, '/person_eating', 10)
         self.subscription = self.create_subscription(
             Image,
             '/zed_dining_room/zed_node_dining_room/left_raw/image_raw_color',
@@ -78,6 +78,9 @@ class ZedInf(Node):
         self.kp_indices=[1,2,3,4,5,6,7,8,9, 10,11,12,13,14,15,16,17, 30,31,32,33,34,35,36,37]
         self.current_points_2d=[]
         self.current_points_3d=[]
+
+        self.count = 0
+        self.total = 0
         
         self.si=0
         self.p2ss=[]
@@ -128,11 +131,33 @@ class ZedInf(Node):
             output = model(tx).cpu().detach().numpy()
             po=output.argmax(axis=1)
             pred=po[0] 
-            print('pred=', pred)  
+            print('pred=', pred)
+
+            self.count = self.count+1
+            self.total = self.total + pred
+            #print("count:",self.count)
+
+            if(self.count>20):
+                average = self.total/self.count
+                if(average>.60):
+                    msg = Int32
+                    msg.data = 1
+                    self.count = 0
+                    self.total = 0
+                    print("average>60:",msg.data)
+                    self.publisher_.publish(msg)
+
+                else:
+                    self.count = 0
+                    self.total = 0
+                    msg = Int32
+                    msg.data = 0
+                    print("average<60:",msg.data)
+                    self.publisher_.publish(msg)
             
-            msg = String()
-            msg.data = 'eating' if pred==1 else 'not eating' 
-            self.publisher_.publish(msg)
+            # msg = String()
+            # msg.data = 'eating' if pred==1 else 'not eating'
+            # self.publisher_.publish(msg)
 
         else:
             print("seq len=", len(self.queue))
